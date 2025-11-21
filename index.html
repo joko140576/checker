@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blacklist Checker</title>
+
+<!-- BOOTSTRAP 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    body {
+        background: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80") no-repeat center center fixed;
+        background-size: cover;
+        backdrop-filter: blur(3px);
+    }
+
+    .checker-box {
+        margin-top: 120px;
+        padding: 30px;
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 15px;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.3);
+    }
+
+    .loading-text {
+        display: none;
+        margin-top: 10px;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .modal-header.blacklisted {
+        background-color: #d9534f;
+        color: white;
+    }
+
+    .modal-header.clear {
+        background-color: #5cb85c;
+        color: white;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-sm-8 checker-box text-center">
+            <h3 class="mb-3">🔍 Blacklist Checker</h3>
+            <p class="text-muted">Masukkan nama untuk memeriksa apakah terdaftar dalam blacklist.</p>
+
+            <input type="text" id="nama" class="form-control form-control-lg" placeholder="Masukkan nama..." autocomplete="off">
+
+            <button class="btn btn-primary btn-lg w-100 mt-3" onclick="checkName()">Cek Sekarang</button>
+
+            <p id="loading" class="loading-text">Memeriksa...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RESULT -->
+<div class="modal fade" id="resultModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div id="modalHeader" class="modal-header">
+        <h5 class="modal-title" id="modalTitle"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p id="modalMsg"></p>
+        <hr>
+        <p><b>Penjelasan:</b></p>
+        <p id="modalExplanation" class="text-danger fw-bold"></p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- BOOTSTRAP JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// GANTI DENGAN API ANDA
+const API_URL = "https://script.google.com/macros/s/AKfycbzpzaHb2gPjxZKD5vsduREKarSKpL7Y9WTp04Yq924Ni-vku1GBaAPFezLxLGm2Le52/exec";
+
+function checkName() {
+    const nama = document.getElementById("nama").value.trim();
+    const loading = document.getElementById("loading");
+
+    if (!nama) {
+        showModal("Error", "Nama tidak boleh kosong.", "", "blacklisted");
+        return;
+    }
+
+    loading.style.display = "block";
+
+    fetch(API_URL + "?name=" + encodeURIComponent(nama))
+        .then(r => r.json())
+        .then(data => {
+            loading.style.display = "none";
+
+            if (data.status === "blacklisted") {
+                showModal(
+                    "⚠ TERDETEKSI",
+                    `Nama <b>${data.name}</b> ditemukan dalam blacklist.`,
+                    data.explanation,
+                    "blacklisted"
+                );
+            } else {
+                showModal(
+                    "✔ AMAN",
+                    `Nama <b>${nama}</b> tidak terdaftar dalam blacklist.`,
+                    "Tidak ada catatan.",
+                    "clear"
+                );
+            }
+        })
+        .catch(err => {
+            loading.style.display = "none";
+            showModal("Error", "Terjadi kesalahan koneksi.", "", "blacklisted");
+        });
+}
+
+function showModal(title, msg, explanation, type) {
+    document.getElementById("modalTitle").innerHTML = title;
+    document.getElementById("modalMsg").innerHTML = msg;
+    document.getElementById("modalExplanation").innerHTML = explanation || "-";
+
+    const header = document.getElementById("modalHeader");
+    header.className = "modal-header " + (type === "blacklisted" ? "blacklisted" : "clear");
+
+    const modal = new bootstrap.Modal(document.getElementById("resultModal"));
+    modal.show();
+}
+</script>
+
+</body>
+</html>
