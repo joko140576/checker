@@ -1,0 +1,31 @@
+
+function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
+  const data = sheet.getRange(2, 1, sheet.getLastRow()-1, 2).getValues();
+
+  const name = (e.parameter.name || "").toLowerCase();
+
+  let found = null;
+
+  data.forEach(row => {
+    const n = (row[0] + "").toLowerCase().trim();
+    if (n === name) {
+      found = {
+        status: "blacklisted",
+        name: row[0],
+        explanation: row[1]
+      };
+    }
+  });
+
+  if (!found) {
+    found = {
+      status: "clear",
+      name: name,
+      explanation: ""
+    };
+  }
+
+  return ContentService.createTextOutput(JSON.stringify(found))
+    .setMimeType(ContentService.MimeType.JSON);
+}
