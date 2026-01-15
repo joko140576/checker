@@ -1,31 +1,32 @@
-
 function doGet(e) {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
-  const data = sheet.getRange(2, 1, sheet.getLastRow()-1, 2).getValues();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "empty", data: [] }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
-  const name = (e.parameter.name || "").toLowerCase();
+  // Ambil 3 kolom: Nama | Penjelasan | COU
+  const data = sheet.getRange(2, 1, lastRow - 1, 3).getValues();
 
-  let found = null;
+  const keyword = (e.parameter.name || "").toLowerCase().trim();
+  let results = [];
 
   data.forEach(row => {
-    const n = (row[0] + "").toLowerCase().trim();
-    if (n === name) {
-      found = {
-        status: "blacklisted",
-        name: row[0],
-        explanation: row[1]
-      };
+    const nama = (row[0] + "").toLowerCase().trim();
+    if (nama.startsWith(keyword)) {
+      results.push({
+        nama: row[0],
+        penjelasan: row[1],
+        cou: row[2]
+      });
     }
   });
 
-  if (!found) {
-    found = {
-      status: "clear",
-      name: name,
-      explanation: ""
-    };
-  }
-
-  return ContentService.createTextOutput(JSON.stringify(found))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify({
+    status: results.length > 0 ? "found" : "not_found",
+    total: results.length,
+    data: results
+  })).setMimeType(ContentService.MimeType.JSON);
 }
+
