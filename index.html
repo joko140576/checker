@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -170,6 +171,37 @@ function checkName() {
             showModal("Error", "Terjadi kesalahan koneksi.", "", "blacklisted");
         });
 }
+
+
+
+function showModal(title, message, explanation, type) {
+    const modalHeader = document.getElementById("modalHeader");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalMsg = document.getElementById("modalMsg");
+    const modalExplanation = document.getElementById("modalExplanation");
+
+    // Reset class
+    modalHeader.classList.remove("blacklisted", "clear");
+
+    if (type === "clear") {
+        modalHeader.classList.add("clear");
+        modalExplanation.classList.remove("text-danger");
+        modalExplanation.classList.add("text-success");
+    } else {
+        modalHeader.classList.add("blacklisted");
+        modalExplanation.classList.remove("text-success");
+        modalExplanation.classList.add("text-danger");
+    }
+
+    modalTitle.innerHTML = title;
+    modalMsg.innerHTML = message;
+    modalExplanation.innerHTML = explanation;
+
+    const modal = new bootstrap.Modal(document.getElementById("resultModal"));
+    modal.show();
+}
+
+
 </script>
 
 
